@@ -1,0 +1,65 @@
+# GCMC for CO2 molecular fluid, rigid/small/nvt dynamics
+# Rigid CO2 TraPPE model
+# [Potoff and J.I. Siepmann, Vapor-liquid equilibria of
+# mixtures containing alkanes, carbon dioxide and
+# nitrogen AIChE J., 47,1676-1682 (2001)].
+
+# global model settings
+
+units           real
+atom_style      full
+boundary        p p p
+pair_style      lj/cut/coul/long  12
+pair_modify     mix arithmetic shift yes
+kspace_style    pppm 1.0e-4
+bond_style      harmonic
+angle_style     harmonic
+neigh_modify    one 4000 
+
+# box, start molecules on simple cubic lattice
+region          mbox block 0 ${lbox} 0 ${lbox} 0 ${lbox} units box
+create_box      2 mbox                       &
+                bond/types 1                &
+                angle/types 1               &
+                extra/bond/per/atom 2       &
+                extra/angle/per/atom 1      &
+                extra/special/per/atom 2
+molecule        co2mol ../CO2.txt
+create_atoms   	0 random ${nmols} 34578 mbox mol co2mol 464563 overlap 1.2
+                        
+# rigid CO2 TraPPE model 
+
+pair_coeff      1   1  0.053649   2.800
+pair_coeff      2   2  0.156973   3.050
+bond_coeff      1       0       1.16   
+angle_coeff     1       0       180 
+
+# masses
+
+mass 1 12.0107 
+mass 2 15.9994 
+
+write_data init_conf.data  pair ij
+
+# MD settings
+
+group           co2 type 1 2
+velocity       	all create 300 54654
+timestep        0.25
+
+# rigid constraints with thermostat 
+fix             myrigidnvt co2 rigid/nvt molecule temp 300 300 $(100*dt)
+
+thermo 1000
+thermo_style custom step temp density press ke pe etotal 
+
+
+variable    mvol equal vol
+variable    mden equal density
+variable	mtmp equal temp
+variable    mpre equal press
+
+fix mydat all ave/time 1 4000 4000 v_mtmp v_mden v_mpre file statistics.dat ## every 1ps
+
+run 8000000 ## 1ns
+write_data	last_conf.data pair ij
