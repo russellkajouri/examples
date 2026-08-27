@@ -1,0 +1,81 @@
+
+    
+    units           real
+    atom_style      full
+    boundary        p p p
+    bond_style      harmonic
+    angle_style     harmonic
+
+    pair_style      lj/cut/coul/long 12.00
+    pair_modify     mix arithmetic shift yes
+    kspace_style    pppm 1.0e-4
+    special_bonds   lj/coul 0.0 0.0 0.0
+
+    if $(is_file(system.cpt)) then "read_restart system.cpt" else "read_data ../../share/equil_nvt.data"
+    
+    include         ../../share/potential.inp
+    timestep        0.2500 ## fs
+
+    group           acn     type 1 2 3
+    group           co2     type 4 5
+    group           mobile  type 1 2 3 4 5
+
+    variable        nco2   equal count(co2)/3.0
+    variable        nacn   equal count(acn)/3.0
+    variable        nmob   equal count(mobile)/3.0
+
+    ## to check the system's temperature
+    compute         mdtemp mobile temp
+    compute_modify  mdtemp dynamic/dof yes
+
+    molecule        mols    ../../share/acnmol.txt  ../../share/co2mol.txt toff 3 boff 2 aoff 1
+    fix             ensemble all rigid/nvt/small molecule temp 300.0 300.0 $(dt*100)  mol mols
+    fix_modify      ensemble dynamic/dof yes
+    
+
+    ## GCMC setup
+    variable        co2tfac equal 5.0/3.0
+    fix             co2gcmc co2 gcmc ${MDsteps} ${MCsteps} 0 0 ${seed1} ${temp} ${co2mu} 0.1 &
+                    mol mols molindex 2 group mobile tfac_insert ${co2tfac} rigid ensemble full_energy
+
+    #fix             acngcmc acn gcmc ${MDsteps} ${MCsteps} 0 0 ${seed2} ${temp} ${acnmu} 0.1 &
+    #                mol mols molindex 1 group mobile tfac_insert ${co2tfac} rigid ensemble full_energy
+
+
+
+    thermo          1000
+    thermo_style    custom step temp c_mdtemp press etotal ke pe v_nacn v_nco2
+    compute_modify  thermo_temp dynamic/dof yes
+
+    variable        mtemp  equal temp
+    variable        mpress equal press
+    variable        mke    equal ke
+    variable        mpe    equal pe
+    variable        metot  equal etotal
+
+
+    fix             nvtstat all ave/time 250 20  10000 v_mtemp c_mdtemp v_mpress v_mke v_mpe v_metot file thermal_statistics.dat
+
+    variable        ciatt equal f_co2gcmc[3]
+    variable        ciacc equal f_co2gcmc[4]
+    variable        cdatt equal f_co2gcmc[5]
+    variable        cdacc equal f_co2gcmc[6]
+
+    fix             cgcmcstat all ave/time ${MDsteps} 1 ${MDsteps} v_ciatt v_ciacc v_cdatt v_cdacc v_nco2 v_nmob file co2_stats.dat
+
+    #variable        wiatt equal f_acngcmc[3]
+    #variable        wiacc equal f_acngcmc[4]
+    #variable        wdatt equal f_acngcmc[5]
+    #variable        wdacc equal f_acngcmc[6]
+
+    #fix             agcmcstat all ave/time ${MDsteps} 1 ${MDsteps} v_wiatt v_wiacc v_wdatt v_wdacc v_nacn v_nmob file acn_stats.dat
+
+    dump            mdump all custom ${MDsteps} traj.lammpstrj id mol type xu yu zu #
+    dump_modify     mdump flush yes
+
+    restart         ${MDsteps} system.cpt system.cpt
+
+    run             ${runsteps} upto
+    write_data      last_snap.data nocoeff nofix
+
+    
