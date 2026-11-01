@@ -72,9 +72,11 @@ $$
 The corresponding cumulative distribution function is
 
 $$
+\begin{equation}
 F_{\mathrm{uniform}}(\alpha)
 =\int_0^\alpha p_{\mathrm{uniform}}(a)\,da
 =\frac{\alpha-\sin\alpha}{\pi}.
+\end{equation}
 $$
 
 These expressions describe uniform sampling over three-dimensional rotations, also called *Haar-uniform sampling*.
@@ -95,9 +97,7 @@ $$
 For a rotation about $\mathbf n$ through angle $\theta$, this projection is
 
 $$
-\mathbf e\cdot R\mathbf e
-=
-\cos\theta+
+\mathbf e\cdot R\mathbf e = \cos\theta +
 (1-\cos\theta)(\mathbf n\cdot\mathbf e)^2.
 $$
 
