@@ -65,12 +65,7 @@ Normalizing this density over $[0,\pi]$ gives
 $$
 \begin{equation}
 p_{\mathrm{uniform}}(\alpha) =
-\frac{\sin^2(\alpha/2)}
-{\displaystyle\int_0^\pi\sin^2(a/2)\,da}
-=
-\frac{2}{\pi}\sin^2(\alpha/2)
-=
-\frac{1-\cos\alpha}{\pi}.
+\frac{\sin^2(\alpha/2)} {\displaystyle\int_0^\pi\sin^2(a/2)\,da} = \frac{2}{\pi}\sin^2(\alpha/2) = \frac{1-\cos\alpha}{\pi}.
 \end{equation}
 $$
 
