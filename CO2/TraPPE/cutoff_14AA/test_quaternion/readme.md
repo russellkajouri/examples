@@ -203,3 +203,19 @@ The proposal distribution itself does not depend on temperature or chemical pote
 Accepted orientations are not expected to be uniform in general, because interactions and geometry can favor particular orientations. The tests above examine the **proposal distribution**, before those physical selection effects.
 
 Confinement motivates correct orientation sampling because insertion feasibility and energy can depend strongly on molecular alignment. No confinement-specific results are claimed here.
+
+
+The results of the tests for legacy and modified systems are presented here
+![legacy system](analysis/insertion_orientation_distribution_legacy.png
+)
+
+The modifed version
+
+![modified system](analysis/insertion_orientation_distribution_modified.png
+)
+
+---
+
+The corrected sampler uses Shoemake’s method to generate uniformly distributed unit quaternions from three independent uniform random numbers. These quaternions produce unbiased three-dimensional orientations. The implementation uses LAMMPS’s quaternion component order, \((w,x,y,z)\).
+
+Reference: Shoemake, K. (1992). “Uniform Random Rotations.” In D. Kirk (Ed.), *Graphics Gems III*, pp. 124–132. https://doi.org/10.1016/B978-0-08-050755-2.50036-1
